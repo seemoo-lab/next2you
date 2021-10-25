@@ -4,8 +4,15 @@ This folder contains a script to produce visualizations for the paper "Next2You:
 
 ## Getting Started
 
-TBD
+This folder contains a visualization script *next2you-plots.py* that is used to produce plots for the paper. See the instructions inside the *next2you-plots.py* for how to launch it. 
 
+The resulting plots were generated with the above script under *Windows 10 x64* using *Python 3.6.5* with the following packages:
+
+```
+glob2==0.6
+matplotlib==3.2.0
+numpy==1.18.2
+```
 
 ## Author
 
