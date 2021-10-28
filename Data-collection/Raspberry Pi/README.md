@@ -36,7 +36,7 @@ On a Raspberry Pi 3B+/4B running Raspbian/Raspberry Pi OS with kernel 4.19 or 5.
 
 9. Install the _nexutil_ tool:
     * Change from the nexmon root directory: `cd utilities/nexutil`
-    * Compile and install nexutil: `make install`
+    * Compile and install nexutil: `sudo -E make install`
     * Change back directory: `cd ../..`
 
 10. Navigate to the patches folder: `cd patches/bcm43455c0/7_45_189/`  
