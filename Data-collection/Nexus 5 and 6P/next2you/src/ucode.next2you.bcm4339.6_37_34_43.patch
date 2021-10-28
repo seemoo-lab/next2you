@@ -1,0 +1,504 @@
+0a1,57
+> /***************************************************************************
+>  *                                                                         *
+>  *          ###########   ###########   ##########    ##########           *
+>  *         ############  ############  ############  ############          *
+>  *         ##            ##            ##   ##   ##  ##        ##          *
+>  *         ##            ##            ##   ##   ##  ##        ##          *
+>  *         ###########   ####  ######  ##   ##   ##  ##    ######          *
+>  *          ###########  ####  #       ##   ##   ##  ##    #    #          *
+>  *                   ##  ##    ######  ##   ##   ##  ##    #    #          *
+>  *                   ##  ##    #       ##   ##   ##  ##    #    #          *
+>  *         ############  ##### ######  ##   ##   ##  ##### ######          *
+>  *         ###########    ###########  ##   ##   ##   ##########           *
+>  *                                                                         *
+>  *            S E C U R E   M O B I L E   N E T W O R K I N G              *
+>  *                                                                         *
+>  * Copyright (c) 2019 Matthias Schulz                                      *
+>  *                                                                         *
+>  * Permission is hereby granted, free of charge, to any person obtaining a *
+>  * copy of this software and associated documentation files (the           *
+>  * "Software"), to deal in the Software without restriction, including     *
+>  * without limitation the rights to use, copy, modify, merge, publish,     *
+>  * distribute, sublicense, and/or sell copies of the Software, and to      *
+>  * permit persons to whom the Software is furnished to do so, subject to   *
+>  * the following conditions:                                               *
+>  *                                                                         *
+>  * 1. The above copyright notice and this permission notice shall be       *
+>  *    include in all copies or substantial portions of the Software.       *
+>  *                                                                         *
+>  * 2. Any use of the Software which results in an academic publication or  *
+>  *    other publication which includes a bibliography must include         *
+>  *    citations to the nexmon project a) and the paper cited under b):     *
+>  *                                                                         *
+>  *    a) "Matthias Schulz, Daniel Wegemer and Matthias Hollick. Nexmon:    *
+>  *        The C-based Firmware Patching Framework. https://nexmon.org"     *
+>  *                                                                         *
+>  *    b) "Francesco Gringoli, Matthias Schulz, Jakob Link, and Matthias    *
+>  *        Hollick. Free Your CSI: A Channel State Information Extraction   *
+>  *        Platform For Modern Wi-Fi Chipsets. Accepted to appear in        *
+>  *        Proceedings of the 13th Workshop on Wireless Network Testbeds,   *
+>  *        Experimental evaluation & CHaracterization (WiNTECH 2019),       *
+>  *        October 2019."                                                   *
+>  *                                                                         *
+>  * 3. The Software is not used by, in cooperation with, or on behalf of    *
+>  *    any armed forces, intelligence agencies, reconnaissance agencies,    *
+>  *    defense agencies, offense agencies or any supplier, contractor, or   *
+>  *    research associated.                                                 *
+>  *                                                                         *
+>  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS *
+>  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF              *
+>  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  *
+>  * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY    *
+>  * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,    *
+>  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE       *
+>  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                  *
+>  *                                                                         *
+>  **************************************************************************/
+> 
+4a62,92
+> #define phy_reg_read_to_shm_off(addr, base, offset) \
+> 	mov addr, r33								   \
+> 	calls   L52									 \
+> 	or  SPR_Ext_IHR_Data, 0x0, [base, offset]
+> 
+> #define phy_reg_write(addr, value)		  \
+> 	mov addr, r33						   \
+> 	mov value, r34						  \
+> 	calls   L54
+> 
+> #define RX_HDR_LEN  32
+> #define RX_HDR_BASE 0x8c0
+> #define RX_HDR_OFFSET(off)	 (RX_HDR_BASE + off)
+> #define RX_HDR_RxFrameSize	 RX_HDR_OFFSET(0)
+> #define RX_HDR_NexmonExt	   RX_HDR_OFFSET(1)
+> #define RX_HDR_PhyRxStatus_0   RX_HDR_OFFSET(2)
+> #define RX_HDR_PhyRxStatus_1   RX_HDR_OFFSET(3)
+> #define RX_HDR_PhyRxStatus_2   RX_HDR_OFFSET(4)
+> #define RX_HDR_PhyRxStatus_3   RX_HDR_OFFSET(5)
+> #define RX_HDR_PhyRxStatus_4   RX_HDR_OFFSET(6)
+> #define RX_HDR_PhyRxStatus_5   RX_HDR_OFFSET(7)
+> #define RX_HDR_RxStatus1	   RX_HDR_OFFSET(8)
+> #define RX_HDR_RxStatus2	   RX_HDR_OFFSET(9)
+> #define RX_HDR_RxTSFTime	   RX_HDR_OFFSET(10)
+> #define RX_HDR_RxChan		  RX_HDR_OFFSET(11)
+> #define RX_HDR_NEXMON_SrcMac0  RX_HDR_OFFSET(12)
+> #define RX_HDR_NEXMON_SrcMac1  RX_HDR_OFFSET(13)
+> #define RX_HDR_NEXMON_SrcMac2  RX_HDR_OFFSET(14)
+> 
+> #define SHM_CSI_COLLECT		 0x8b0
+> #define SHM_CSI_COPIED		  0x8b1
+246c334
+< 	jdn	SPR_TSF_WORD0, [0xBFE], L45
+---
+> 	jdn	SPR_TSF_WORD0, [RX_HDR_RxChan], L45
+2031c2119
+< 	or	SPR_TSF_WORD0, 0x0, [0xBFE]
+---
+> 	or	SPR_TSF_WORD0, 0x0, [RX_HDR_RxChan]
+2316c2404
+< 	add	SPR_TSF_WORD0, 0x320, [0xBFE]
+---
+> 	add	SPR_TSF_WORD0, 0x320, [RX_HDR_RxChan]
+2711a2800
+> 	mov 0, [SHM_CSI_COPIED]
+2770c2859
+< 	or	SPR_TSF_WORD0, 0x0, [0xBFE]
+---
+> 	or	SPR_TSF_WORD0, 0x0, [RX_HDR_RxChan]
+2856a2946,3185
+> #define SPIN_LENGTH (6)
+> #define SPARE1	  r54
+> spin_rx_header:
+> 	jext	COND_RX_COMPLETE, spin_rx_end
+> 	jl	  SPR_RXE_FRAMELEN, SPIN_LENGTH, spin_rx_header
+> spin_rx_end:
+> 	jne [SHM_CSI_COLLECT], 1, skip+
+> 	mov 0xaaaa, SPARE1
+> 	jne [5,off1], SPARE1, L652
+> 	jne r23, 0x0, localskip+
+> 	add [0x8bd], 1, [0x8bd] // 802.11b frame
+> 	jne r23, 0x1, localskip+
+> 	add [0x8be], 1, [0x8be] // 802.11g frame
+> localskip:
+> 	jne r23, 0x2, localskip+
+> 	add [0x8bf], 1, [0x8bf] // 802.11n frame
+> localskip:
+> 	or  [5,off1], 0x0, [RX_HDR_NEXMON_SrcMac0]
+> 	or  [6,off1], 0x0, [RX_HDR_NEXMON_SrcMac1]
+> 	or  [7,off1], 0x0, [RX_HDR_NEXMON_SrcMac2]
+> 	mov RX_HDR_BASE + RX_HDR_LEN, SPARE1
+> 	mov RX_HDR_BASE + (17 * RX_HDR_LEN), SPR_BASE5
+> erase_hdr: // L456
+> 	mov 0x0, [0x00,off5]
+> 	sub SPR_BASE5, 0x1, SPR_BASE5
+> 	jges	SPR_BASE5, SPARE1, erase_hdr- // LOOP
+> 
+> 	// read chanest table and store it in RXHDR
+> 	phy_reg_write(0x00d,73)
+> 
+> 	mov 0, SPARE1
+> 	mov (RX_HDR_BASE + RX_HDR_LEN), SPR_BASE5
+> 
+> 	// copy CSI information for 1st 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 15, repeat-
+> 
+> 	// copy CSI information for 2nd 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 30, repeat-
+> 
+> 	// copy CSI information for 3rd 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 45, repeat-
+> 
+> 	// copy CSI information for 4th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 60, repeat-
+> 
+> 	// copy CSI information for 5th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 75, repeat-
+> 
+> 	// copy CSI information for 6th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 90, repeat-
+> 
+> 	// copy CSI information for 7th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 105, repeat-
+> 
+> 	// copy CSI information for 8th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 120, repeat-
+> 
+> 	// copy CSI information for 9th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 135, repeat-
+> 
+> 	// copy CSI information for 10th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 150, repeat-
+> 
+> 	// copy CSI information for 11th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 165, repeat-
+> 
+> 	// copy CSI information for 12th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 180, repeat-
+> 
+> 	// copy CSI information for 13th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 195, repeat-
+> 
+> 	// copy CSI information for 14th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 210, repeat-
+> 
+> 	// copy CSI information for 15th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 225, repeat-
+> 
+> 	// copy CSI information for 16th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 240, repeat-
+> 
+> 	// copy CSI information for 17th 15 subcarriers
+> 	or 2, 0x0, [0, off5]
+> 	or 15, 0x0, [1, off5] // NexmonExt: number of uint32 iq samples contained in this header
+> 	add SPR_BASE5, 2, SPR_BASE5
+> repeat:
+> 	phy_reg_write(0x00e, SPARE1)
+> 	phy_reg_read_to_shm_off(0x00f, 0, off5)
+> 	phy_reg_read_to_shm_off(0x010, 1, off5)
+> 	add SPR_BASE5, 2, SPR_BASE5
+> 	add SPARE1, 1, SPARE1
+> 	jl SPARE1, 255, repeat-
+> 
+> 	mov 1, [SHM_CSI_COPIED]
+> skip:
+> 
+2859,2860c3188,3189
+< 	mov	0x0, [0x848]
+< 	orx	1, 1, 0x3, 0x0, [0x849]
+---
+> 	mov	0x0, [RX_HDR_RxStatus1]
+> 	orx	1, 1, 0x3, 0x0, [RX_HDR_RxStatus2]
+2897c3226
+< 	orx	2, 0, 0x3, [0x849], [0x849]
+---
+> 	orx	2, 0, 0x3, [RX_HDR_RxStatus2], [RX_HDR_RxStatus2]
+2903c3232
+< 	orx	0, 2, r1, [0x848], [0x848]
+---
+> 	orx	0, 2, r1, [RX_HDR_RxStatus1], [RX_HDR_RxStatus1]
+3060c3389
+< 	orx	5, 5, r25, [0x848], [0x848]
+---
+> 	orx	5, 5, r25, [RX_HDR_RxStatus1], [RX_HDR_RxStatus1]
+3080c3409
+< 	orx	0, 3, 0x1, [0x849], [0x849]
+---
+> 	orx	0, 3, 0x1, [RX_HDR_RxStatus2], [RX_HDR_RxStatus2]
+3096,3097c3425,3426
+< 	orx	0, 3, 0x1, [0x848], [0x848]
+< 	orx	5, 5, r25, [0x848], [0x848]
+---
+> 	orx	0, 3, 0x1, [RX_HDR_RxStatus1], [RX_HDR_RxStatus1]
+> 	orx	5, 5, r25, [RX_HDR_RxStatus1], [RX_HDR_RxStatus1]
+3101c3430
+< 	orx	0, 3, 0x0, [0x849], [0x849]
+---
+> 	orx	0, 3, 0x0, [RX_HDR_RxStatus2], [RX_HDR_RxStatus2]
+3126c3455
+< 	jzx	0, 0, [0x849], 0x0, L551
+---
+> 	jzx	0, 0, [RX_HDR_RxStatus2], 0x0, L551
+3312c3641
+< 	orx	0, 0, 0x1, [0x848], [0x848]
+---
+> 	orx	0, 0, 0x1, [RX_HDR_RxStatus1], [RX_HDR_RxStatus1]
+3384c3713
+< 	orx	0, 1, 0x1, [0x848], [0x848]
+---
+> 	orx	0, 1, 0x1, [RX_HDR_RxStatus1], [RX_HDR_RxStatus1]
+3497c3826
+< 	orx	0, 2, 0x1, [0x849], [0x849]
+---
+> 	orx	0, 2, 0x1, [RX_HDR_RxStatus2], [RX_HDR_RxStatus2]
+3499c3828
+< 	orx	0, 15, r33, [0x848], [0x848]
+---
+> 	orx	0, 15, r33, [RX_HDR_RxStatus1], [RX_HDR_RxStatus1]
+3505,3506c3834,3835
+< 	orx	0, 4, r33, [0x848], [0x848]
+< 	jzx	0, 3, [0x849], 0x0, L627
+---
+> 	orx	0, 4, r33, [RX_HDR_RxStatus1], [RX_HDR_RxStatus1]
+> 	jzx	0, 3, [RX_HDR_RxStatus2], 0x0, L627
+3508c3837
+< 	orx	0, 4, r33, [0x849], [0x849]
+---
+> 	orx	0, 4, r33, [RX_HDR_RxStatus2], [RX_HDR_RxStatus2]
+3511c3840
+< 	orx	1, 5, r33, [0x849], [0x849]
+---
+> 	orx	1, 5, r33, [RX_HDR_RxStatus2], [RX_HDR_RxStatus2]
+3514,3521c3843,3850
+< 	or	SPR_RXE_PHYRXSTAT0, 0x0, [0x842]
+< 	or	SPR_RXE_PHYRXSTAT1, 0x0, [0x843]
+< 	or	SPR_RXE_PHYRXSTAT2, 0x0, [0x844]
+< 	or	SPR_RXE_PHYRXSTAT3, 0x0, [0x845]
+< 	or	SPR_RXE_0x46, 0x0, [0x847]
+< 	or	SPR_RXE_0x44, 0x0, [0x846]
+< 	orx	7, 0, SPR_RCM_TA_Address_2, [0x847], [0x847]
+< 	orx	0, 8, 0x1, [0x849], [0x849]
+---
+> 	or	SPR_RXE_PHYRXSTAT0, 0x0, [RX_HDR_PhyRxStatus_0]
+> 	or	SPR_RXE_PHYRXSTAT1, 0x0, [RX_HDR_PhyRxStatus_1]
+> 	or	SPR_RXE_PHYRXSTAT2, 0x0, [RX_HDR_PhyRxStatus_2]
+> 	or	SPR_RXE_PHYRXSTAT3, 0x0, [RX_HDR_PhyRxStatus_3]
+> 	or	SPR_RXE_0x46, 0x0, [RX_HDR_PhyRxStatus_5]
+> 	or	SPR_RXE_0x44, 0x0, [RX_HDR_PhyRxStatus_4]
+> 	orx	7, 0, SPR_RCM_TA_Address_2, [RX_HDR_PhyRxStatus_5], [RX_HDR_PhyRxStatus_5]
+> 	orx	0, 8, 0x1, [RX_HDR_RxStatus2], [RX_HDR_RxStatus2]
+3525c3854
+< 	jzx	0, 0, [0x849], 0x0, L629
+---
+> 	jzx	0, 0, [RX_HDR_RxStatus2], 0x0, L629
+3529c3858
+< 	jzx	0, 2, [0x848], 0x0, L630
+---
+> 	jzx	0, 2, [RX_HDR_RxStatus1], 0x0, L630
+3533c3862,3867
+< 	or	r33, 0x0, [0x840]
+---
+> 	or	r33, 0x0, [RX_HDR_RxFrameSize]
+> 	mov RX_HDR_BASE, SPR_RXE_RXHDR_OFFSET
+> 	or 0, 0x0, [SHM(0x1182)]
+> 	jne [SHM_CSI_COPIED], 1, skip+
+> 	or 17, 0x0, [SHM(0x1182)] // NexmonExt: number of following csi frames; 17 csi frames containing 15 complex csi values each can transfer 255 csi values
+> skip:
+3534a3869,3905
+> jne [SHM_CSI_COPIED], 1, skip+
+> 	mov RX_HDR_BASE + RX_HDR_LEN, SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (2 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (3 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (4 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (5 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (6 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (7 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (8 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (9 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (10 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (11 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (12 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (13 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (14 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (15 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (16 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> 	mov RX_HDR_BASE + (17 * RX_HDR_LEN), SPR_RXE_RXHDR_OFFSET
+> 	calls   L798
+> skip:
+> 
+3537,3538c3908,3909
+< 	orx	0, 2, 0x1, [0x848], [0x848]
+< 	orx	0, 1, 0x0, [0x849], [0x849]
+---
+> 	orx	0, 2, 0x1, [RX_HDR_RxStatus1], [RX_HDR_RxStatus1]
+> 	orx	0, 1, 0x0, [RX_HDR_RxStatus2], [RX_HDR_RxStatus2]
+4008c4379
+< 	orx	0, 0, 0x0, [0x849], [0x849]
+---
+> 	orx	0, 0, 0x0, [RX_HDR_RxStatus2], [RX_HDR_RxStatus2]
+4476,4477c4847,4848
+< 	orx	1, 0, r23, [0x842], [0x842]
+< 	mov	0x840, SPR_RXE_RXHDR_OFFSET
+---
+> 	orx	1, 0, r23, [RX_HDR_PhyRxStatus_0], [RX_HDR_PhyRxStatus_0]
+> 	mov	RX_HDR_RxFrameSize, SPR_RXE_RXHDR_OFFSET
