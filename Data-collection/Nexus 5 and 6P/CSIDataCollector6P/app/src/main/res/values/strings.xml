@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">CSI Data Collector</string>
+    <string name="hint_enter_chan">Enter channel specifications here</string>
+    <string name="hint_enter_label">Enter label for CSI data</string>
+    <string name="button_start_csi">Start CSI Collection</string>
+    <string name="button_sender_mode">Enter sender mode</string>
+
+
+    <string-array name="spinner_list">
+        <item>Finalize dataset</item>
+        <item>Extend dataset</item>
+    </string-array>
+</resources>
