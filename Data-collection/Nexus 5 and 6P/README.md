@@ -46,8 +46,9 @@ On a linux machine (tested with Ubuntu 16.04) follow these steps:
 Use an Android application building environment, e.g. Android Studio, to compile and install the collector application:
 
 * The _CSIDataCollector_ directory of this repository holds the Android project for the Nexus 5.
-
 * The _CSIDataCollector6P_ directory of this repository holds the Android project for the Nexus 6P.
+
+Instructions on how to use this Android app are given [here](https://github.com/seemoo-lab/next2you/blob/main/Data-collection/implementation_details.pdf) (cf. Section 4.2).
 
 ## Authors
 
