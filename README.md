@@ -1,9 +1,9 @@
 Next2You Codebase
 ==================================
 
-This repository contains the codebase for the Next2You copresence detection scheme published in "Next2You: Robust Copresence Detection Based on Channel State Information", by Mikhail Fomichev, Luis F. Abanto-Leon, Max Stiegler, Alejandro Molina, Jakob Link, Matthias Hollick, in ACM Transactions on Internet of Things, vol. 1, Issue 1, 2021.
+This repository contains the codebase for the Next2You copresence detection scheme published as: "Next2You: Robust Copresence Detection Based on Channel State Information" by Mikhail Fomichev, Luis F. Abanto-Leon, Max Stiegler, Alejandro Molina, Jakob Link, Matthias Hollick in *ACM Transactions on Internet of Things*, vol. 3, Issue 2, 2022.
 
-The relevant datasets can be found [on Zenodo](https://doi.org/10.5281/zenodo.5105815).
+The relevant datasets can be found [on Zenodo](https://doi.org/10.5281/zenodo.5105815). The pre-print version of our paper is available on [arXiv](https://arxiv.org/abs/2111.05224).
 
 The code in this repository is structured in several folders:
 
